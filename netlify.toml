@@ -1,7 +1,13 @@
 [build]
-  publish = "."
+  command = "npm run build"
+  publish = "public"
 
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "SAMEORIGIN"
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex"
