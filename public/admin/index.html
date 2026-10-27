@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Canavida · Ocupación</title>
+  <style>
+    :root {
+      --selva: #24503D; --selva-700: #1b3d2f; --selva-100: #e3ece6; --arena: #FBF8F2; --arena-200: #efe8da;
+      --tierra: #c0703f; --ink: #1f2a24; --muted: #6b7570; --line: #e4ddd0; --danger: #a83a2c;
+      --airbnb: #e0565b; --booking: #2f5ea8; --expedia: #d7a227; --website: #24503D; --other: #7a6f9b;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body { font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--arena); color: var(--ink); }
+    h1, h2, .display { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
+    button, input { font: inherit; }
+    [hidden] { display: none !important; }
+
+    .auth { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    .auth-card { width: 100%; max-width: 380px; background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 32px 28px; box-shadow: 0 12px 40px rgba(36,80,61,.08); }
+    .mark { width: 44px; height: 44px; border-radius: 12px; background: var(--selva); color: var(--arena); display: grid; place-items: center; font: 26px Georgia, serif; margin-bottom: 18px; }
+    .auth-card h1 { font-size: 28px; margin-bottom: 4px; }
+    .auth-card p.sub { color: var(--muted); margin-bottom: 22px; }
+    label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
+    input[type=email], input[type=password], input[type=search] { width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 10px; background: var(--arena); }
+    input:focus { outline: 2px solid var(--selva); outline-offset: 1px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 999px; padding: 11px 20px; font-weight: 700; cursor: pointer; background: var(--selva); color: var(--arena); }
+    .btn:hover { background: var(--selva-700); }
+    .btn:disabled { opacity: .55; cursor: progress; }
+    .btn.ghost { background: transparent; color: var(--selva); border: 1px solid var(--line); }
+    .btn.ghost:hover { background: var(--selva-100); }
+    .btn.small { padding: 6px 12px; font-size: 13px; }
+    .btn.block { width: 100%; margin-top: 22px; }
+    .link { background: none; border: 0; color: var(--selva); font-weight: 600; cursor: pointer; padding: 0; margin-top: 14px; }
+    .msg { margin-top: 14px; font-size: 14px; padding: 10px 12px; border-radius: 10px; }
+    .msg.err { background: #f8e6e2; color: var(--danger); }
+    .msg.ok { background: var(--selva-100); color: var(--selva-700); }
+
+    header.top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 14px; padding: 14px 28px; background: rgba(251,248,242,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+    header.top .mark { width: 34px; height: 34px; font-size: 20px; border-radius: 9px; margin: 0; }
+    header.top .title { font: 20px Georgia, serif; flex: 1; }
+    header.top .who { color: var(--muted); font-size: 13px; }
+    main { max-width: 1320px; margin: 0 auto; padding: 26px 28px 60px; display: flex; flex-direction: column; gap: 26px; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+    .stat { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+    .stat .k { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .stat .v { font: 34px/1.15 Georgia, serif; margin-top: 4px; }
+    .stat .v small { font: 14px -apple-system, sans-serif; color: var(--muted); }
+
+    .panel { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 20px 22px; }
+    .panel-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .panel-head h2 { font-size: 24px; flex: 1; }
+
+    .drop { border: 2px dashed var(--line); border-radius: 14px; padding: 26px; text-align: center; cursor: pointer; transition: .15s; background: var(--arena); }
+    .drop.over, .drop:hover { border-color: var(--selva); background: var(--selva-100); }
+    .drop strong { display: block; font-size: 16px; margin-bottom: 4px; }
+    .drop span { color: var(--muted); font-size: 14px; }
+    .imports { margin-top: 14px; font-size: 13px; color: var(--muted); }
+
+    .grid-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+    table.occ { border-collapse: collapse; min-width: 100%; font-size: 12px; table-layout: fixed; }
+    table.occ th, table.occ td { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); height: 38px; padding: 0; }
+    table.occ thead th { position: sticky; top: 0; background: var(--arena); font-weight: 600; color: var(--muted); width: 44px; text-align: center; line-height: 1.1; }
+    table.occ thead th.today { color: var(--selva); background: var(--selva-100); }
+    table.occ thead th.wk { background: var(--arena-200); }
+    table.occ th.villa { position: sticky; left: 0; z-index: 2; background: #fff; width: 120px; text-align: left; padding: 0 12px; font-size: 13px; color: var(--ink); }
+    table.occ thead th.villa { z-index: 3; background: var(--arena); }
+    .bar { margin: 4px 2px; height: 30px; border-radius: 8px; color: #fff; padding: 0 8px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; cursor: default; }
+    .bar.cancelled { background: repeating-linear-gradient(45deg, #ccc, #ccc 6px, #ddd 6px, #ddd 12px) !important; color: #555; text-decoration: line-through; }
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+    table.list { width: 100%; border-collapse: collapse; font-size: 14px; }
+    table.list th { text-align: left; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+    table.list td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.list tr.cancelled td { color: var(--muted); text-decoration: line-through; }
+    .code { font-family: ui-monospace, Menlo, monospace; font-size: 13px; background: var(--arena); border-radius: 6px; padding: 1px 6px; margin: 0 4px 4px 0; display: inline-block; }
+    .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #fff; }
+    .tabs { display: inline-flex; background: var(--arena); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+    .tabs button { border: 0; background: none; padding: 6px 14px; border-radius: 999px; cursor: pointer; font-weight: 600; color: var(--muted); }
+    .tabs button.on { background: var(--selva); color: var(--arena); }
+    .empty { padding: 30px; text-align: center; color: var(--muted); }
+    .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 14px; z-index: 20; }
+  </style>
+</head>
+<body>
+  <section class="auth" id="auth" hidden>
+    <form class="auth-card" id="auth-form">
+      <div class="mark">C</div>
+      <h1 id="auth-title">Panel de ocupación</h1>
+      <p class="sub" id="auth-sub">Ingresa con tu cuenta del equipo Canavida.</p>
+      <div id="email-row"><label for="email">Correo</label><input id="email" type="email" autocomplete="username" required></div>
+      <div id="password-row"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn block" id="auth-submit" type="submit">Entrar</button>
+      <button class="link" id="forgot" type="button">¿Olvidaste tu contraseña?</button>
+      <div id="auth-msg"></div>
+    </form>
+  </section>
+
+  <div id="app" hidden>
+    <header class="top">
+      <div class="mark">C</div>
+      <div class="title">Canavida · Ocupación</div>
+      <span class="who" id="who"></span>
+      <a class="btn ghost small" href="/" target="_blank" rel="noopener">App del huésped</a>
+      <button class="btn ghost small" id="logout">Salir</button>
+    </header>
+    <main>
+      <div class="stats" id="stats"></div>
+
+      <section class="panel">
+        <div class="panel-head"><h2>Importar reservas</h2></div>
+        <label class="drop" id="drop">
+          <input type="file" id="file" accept=".csv,.xlsx,.xls,.pdf" hidden>
+          <strong>Arrastra aquí tu reporte de ocupación</strong>
+          <span>Excel (.xlsx, .xls), CSV o PDF · las reservas existentes se actualizan, no se duplican</span>
+        </label>
+        <div id="import-msg"></div>
+        <div class="imports" id="imports"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Ocupación</h2>
+          <button class="btn ghost small" id="prev">← 2 semanas</button>
+          <button class="btn ghost small" id="today">Hoy</button>
+          <button class="btn ghost small" id="next">2 semanas →</button>
+        </div>
+        <div class="grid-wrap"><table class="occ" id="occ"></table></div>
+        <div class="legend" id="legend" style="margin-top:12px"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Reservas</h2>
+          <div class="tabs" id="tabs">
+            <button data-tab="arrivals" class="on">Llegadas</button>
+            <button data-tab="inhouse">En casa</button>
+            <button data-tab="departures">Salidas</button>
+            <button data-tab="all">Todas</button>
+          </div>
+          <input type="search" id="search" placeholder="Buscar nombre, villa o confirmación" style="max-width:300px">
+        </div>
+        <div id="list"></div>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="/admin/admin.js"></script>
+</body>
+</html>
