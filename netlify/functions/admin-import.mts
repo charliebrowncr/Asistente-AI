@@ -1,5 +1,5 @@
 import type { Config } from "@netlify/functions";
-import { sql } from "drizzle-orm";
+import { and, eq, gte, lte, ne, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { imports, reservations } from "../../db/schema.js";
 import { requireAdmin } from "../../lib/auth.js";
@@ -59,8 +59,30 @@ export default async (req: Request) => {
     created += result.filter((r) => r.inserted).length;
   }
 
+  // Sync mode: the file is the source of truth for the dates it covers. Booked
+  // reservations arriving in that range that this import didn't touch are no
+  // longer in the PMS, so they are marked cancelled (never deleted).
+  let removed = 0;
+  if (form.get("sync") === "1") {
+    const arrivals = parsed.map((r) => r.arrival).sort();
+    const gone = await db
+      .update(reservations)
+      .set({ status: "cancelled", updatedAt: new Date() })
+      .where(
+        and(
+          eq(reservations.status, "booked"),
+          gte(reservations.arrival, arrivals[0]),
+          lte(reservations.arrival, arrivals[arrivals.length - 1]),
+          ne(reservations.importId, imp.id),
+        ),
+      )
+      .returning({ guestName: reservations.guestName });
+    removed = gone.length;
+  }
+
   return Response.json({
     importId: imp.id,
+    removed,
     total: parsed.length,
     created,
     updated: parsed.length - created,

@@ -57,6 +57,9 @@
     .drop.over, .drop:hover { border-color: var(--selva); background: var(--selva-100); }
     .drop strong { display: block; font-size: 16px; margin-bottom: 4px; }
     .drop span { color: var(--muted); font-size: 14px; }
+    .sync { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 14px; cursor: pointer; text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--ink); }
+    .sync input { margin-top: 3px; accent-color: var(--selva); }
+    .sync small { display: block; color: var(--muted); }
     .imports { margin-top: 14px; font-size: 13px; color: var(--muted); }
 
     .grid-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
@@ -104,18 +107,23 @@
       <div class="mark">C</div>
       <div class="title">Canavida · Ocupación</div>
       <span class="who" id="who"></span>
+      <button class="btn small" id="import-btn">Importar archivo</button>
       <a class="btn ghost small" href="/" target="_blank" rel="noopener">App del huésped</a>
       <button class="btn ghost small" id="logout">Salir</button>
     </header>
     <main>
       <div class="stats" id="stats"></div>
 
-      <section class="panel">
+      <section class="panel" id="import-panel">
         <div class="panel-head"><h2>Importar reservas</h2></div>
         <label class="drop" id="drop">
           <input type="file" id="file" accept=".csv,.xlsx,.xls,.pdf" hidden>
           <strong>Arrastra aquí tu reporte de ocupación</strong>
-          <span>Excel (.xlsx, .xls), CSV o PDF · las reservas existentes se actualizan, no se duplican</span>
+          <span>o haz clic para elegirlo · Excel (.xlsx, .xls), CSV o PDF · las reservas existentes se actualizan, no se duplican</span>
+        </label>
+        <label class="sync"><input type="checkbox" id="sync" checked>
+          <span>Actualizar la ocupación a partir de este archivo
+            <small>Las reservas que ya no aparecen en el archivo (dentro de sus fechas de llegada) se marcan como canceladas.</small></span>
         </label>
         <div id="import-msg"></div>
         <div class="imports" id="imports"></div>

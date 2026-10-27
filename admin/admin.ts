@@ -154,6 +154,10 @@ async function load() {
 const drop = $("drop");
 const fileInput = $<HTMLInputElement>("file");
 fileInput.addEventListener("change", () => fileInput.files?.[0] && upload(fileInput.files[0]));
+$("import-btn").addEventListener("click", () => {
+  $("import-panel").scrollIntoView({ behavior: "smooth", block: "center" });
+  fileInput.click();
+});
 drop.addEventListener("dragover", (e) => { e.preventDefault(); drop.classList.add("over"); });
 drop.addEventListener("dragleave", () => drop.classList.remove("over"));
 drop.addEventListener("drop", (e) => {
@@ -169,13 +173,15 @@ async function upload(file: File) {
   msg.innerHTML = `<div class="msg ok">Importando ${esc(file.name)}${isPdf ? " · leyendo el PDF, puede tardar hasta un minuto" : ""}…</div>`;
   const form = new FormData();
   form.append("file", file);
+  if ($<HTMLInputElement>("sync").checked) form.append("sync", "1");
   try {
-    const r = await api<{ total: number; created: number; updated: number; cancelled: number; withoutCode: string[] }>(
+    const r = await api<{ total: number; created: number; updated: number; cancelled: number; removed: number; withoutCode: string[] }>(
       "/api/admin/import",
       { method: "POST", body: form },
     );
     let text = `${r.total} reservas importadas: ${r.created} nuevas, ${r.updated} actualizadas` +
-      (r.cancelled ? `, ${r.cancelled} canceladas` : "") + ".";
+      (r.cancelled ? `, ${r.cancelled} canceladas` : "") + "." +
+      (r.removed ? ` ${r.removed} reservas que ya no estaban en el archivo se marcaron como canceladas.` : "");
     if (r.withoutCode.length) text += ` Sin número de confirmación: ${r.withoutCode.join(", ")}.`;
     showMsg(msg, text, true);
     load();
